@@ -77,7 +77,7 @@ public class AuthServlet extends HttpServlet {
 			Config config = Config.getInstance();
 
 			DBManager dbManager = DBManager.getInstance(config.getDataSourceUserName(), config.getDataSourcePassword(),
-					config.getDataSourceUrl("jdbc:mysql", "UTF-8"), config.getDataSourceDbName());
+					config.getDataSourceUrl(!config.isDatasourceEmbedded() ? "jdbc:mysql" : "jdbc:hsqldb", "UTF-8"), config.getDataSourceDbName());
 
 			UserRepositoryImpl userRepository = new UserRepositoryImpl(dbManager);
 			UserServiceImpl userService = new UserServiceImpl(userRepository);

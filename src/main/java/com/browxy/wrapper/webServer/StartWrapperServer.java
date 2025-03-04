@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 
 import com.browxy.wrapper.webServer.config.Config;
+import com.browxy.wrapper.webServer.db.embedded.HSQLDBManager;
 import com.browxy.wrapper.webServer.servlets.DownloadAssetServlet;
 import com.browxy.wrapper.webServer.servlets.FileReaderServlet;
 import com.browxy.wrapper.webServer.servlets.FileUploadServlet;
@@ -32,6 +33,11 @@ public class StartWrapperServer {
 		if (config == null) {
 			throw new RuntimeException("Server config not loaded...");
 		}
+		
+		if(config.isDatasourceEmbedded()) {
+		    HSQLDBManager.startDatabaseServer();
+		}
+		
 		String containerBasePath = config.getContainerBasePath();
 		System.setProperty("java.class.path", containerBasePath + File.separator + "target/classes");
 

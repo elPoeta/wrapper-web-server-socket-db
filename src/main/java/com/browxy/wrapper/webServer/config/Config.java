@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class Config {
 	private static final Logger logger = LoggerFactory.getLogger(Config.class);
-	
+
 	private static Config instance = null;
 	private static final Object lock = new Object();
 
@@ -21,7 +21,7 @@ public class Config {
 	private Config() {
 		Properties properties = getProperties();
 		configValues = new HashMap<>();
-		
+
 		configValues.put("server.port", properties.getProperty("server.port"));
 		configValues.put("server.staticDir", System.getenv("STATIC_DIR") != null ? System.getenv("STATIC_DIR")
 				: properties.getProperty("server.staticDir"));
@@ -30,26 +30,37 @@ public class Config {
 		configValues.put("server.entryPoint", System.getenv("ENTRY_POINT") != null ? System.getenv("ENTRY_POINT")
 				: properties.getProperty("server.entryPoint"));
 		configValues.put("server.storage", properties.getProperty("server.storage"));
-		
-		configValues.put("socket.port", properties.getProperty("socket.port"));	
+
+		configValues.put("socket.port", properties.getProperty("socket.port"));
 		configValues.put("container.basePath", properties.getProperty("container.basePath"));
 		configValues.put("container.mavenRepoPath", properties.getProperty("container.mavenRepoPath"));
 		configValues.put("container.mavenSettingsPath", properties.getProperty("container.mavenSettingsPath"));
-		configValues.put("socket.keystorePath", System.getenv("SOCKET_KEYSTORE_PATH") != null ? System.getenv("SOCKET_KEYSTORE_PATH") : "");
-		configValues.put("socket.keystorePassword", System.getenv("SOCKET_KEYSTORE_PASSWORD") != null ? System.getenv("SOCKET_KEYSTORE_PASSWORD") : "");	
+		configValues.put("socket.keystorePath",
+				System.getenv("SOCKET_KEYSTORE_PATH") != null ? System.getenv("SOCKET_KEYSTORE_PATH") : "");
+		configValues.put("socket.keystorePassword",
+				System.getenv("SOCKET_KEYSTORE_PASSWORD") != null ? System.getenv("SOCKET_KEYSTORE_PASSWORD") : "");
 		configValues.put("socket.isSecure",
 				System.getenv("SOCKET_IS_SECURE") != null ? System.getenv("SOCKET_IS_SECURE") : "false");
-	    
-		configValues.put("datasource.ip", System.getenv("DATASOURCE_IP") != null ? System.getenv("DATASOURCE_IP") : "");
+
+		configValues.put("datasource.ip",
+				System.getenv("BROWXY_LIB_DATA_SOURCE_IP") != null ? System.getenv("BROWXY_LIB_DATA_SOURCE_IP") : "");
 		configValues.put("datasource.port",
-				System.getenv("DATASOURCE_PORT") != null ? System.getenv("DATASOURCE_PORT") : "");
+				System.getenv("BROWXY_LIB_DATA_SOURCE_PORT") != null ? System.getenv("BROWXY_LIB_DATA_SOURCE_PORT")
+						: "");
 		configValues.put("datasource.dbname",
-				System.getenv("DATASOURCE_DB_NAME") != null ? System.getenv("DATASOURCE_DB_NAME") : "");
+				System.getenv("USER_PROJECT_ID") != null ? System.getenv("USER_PROJECT_ID") : "");
 		configValues.put("datasource.username",
-				System.getenv("DATASOURCE_USER_NAME") != null ? System.getenv("DATASOURCE_USER_NAME") : "");
+				System.getenv("BROWXY_LIB_DATA_SOURCE_USER") != null ? System.getenv("BROWXY_LIB_DATA_SOURCE_USER")
+						: "");
 		configValues.put("datasource.password",
-				System.getenv("DATASOURCE_PASSWORD") != null ? System.getenv("DATASOURCE_PASSWORD") : "");
-	
+				System.getenv("BROWXY_LIB_DATA_SOURCE_PASSWORD") != null
+						? System.getenv("BROWXY_LIB_DATA_SOURCE_PASSWORD")
+						: "");
+		configValues.put("datasource.embedded",
+				System.getenv("DATASOURCE_EMBEDDED") != null ? System.getenv("DATASOURCE_EMBEDDED") : "true");
+		configValues.put("datasource.filePath", properties.getProperty("datasource.filePath"));
+		configValues.put("datasource.embedded.port", properties.getProperty("datasource.embedded.port"));
+		
 	}
 
 	public static Config getInstance() {
@@ -169,11 +180,21 @@ public class Config {
 		configValues.put("datasource.password", password);
 	}
 
-	public String getDataSourceUrl(String connector, String encoding) {
-		return connector + "://" + getDataSourceIp() + "/" + getDataSourceDbName() + "?characterEncoding=" + encoding;
-	
+	public String getDataSourceFilePath() {
+		return configValues.get("datasource.filePath");
+	}
+
+	public void setDataSourceFilePath(String filePath) {
+		configValues.put("datasource.filePath", filePath);
 	}
 	
+	public String getDataSourceUrl(String connector, String encoding) {
+		return !this.isDatasourceEmbedded()
+				? connector + "://" + getDataSourceIp() + "/" + getDataSourceDbName() + "?characterEncoding=" + encoding
+				: connector + ":file://" + getDataSourceFilePath() + ";shutdown=true;hsqldb.applog=0;sql.enforce_strict_size=false";
+
+	}
+
 	public String getContainerBasePath() {
 		return configValues.get("container.basePath");
 	}
@@ -181,7 +202,7 @@ public class Config {
 	public void setContainerBasePath(String containerBasePath) {
 		configValues.put("container.basePath", containerBasePath);
 	}
-	
+
 	public String getContainerMavenRepoPath() {
 		return configValues.get("container.mavenRepoPath");
 	}
@@ -189,7 +210,7 @@ public class Config {
 	public void setContainerMavenRepoPath(String containerMavenRepoPath) {
 		configValues.put("container.mavenRepoPath", containerMavenRepoPath);
 	}
-	
+
 	public String getContainerMavenSettingsPath() {
 		return configValues.get("container.mavenSettingsPath");
 	}
@@ -205,7 +226,7 @@ public class Config {
 	public void setSocketPort(int port) {
 		configValues.put("socket.port", String.valueOf(port));
 	}
-	
+
 	public String getKeystorePath() {
 		return configValues.get("socket.keystorePath");
 	}
@@ -221,7 +242,7 @@ public class Config {
 	public void setKeystorePassword(String keystorePassword) {
 		configValues.put("socket.keystorePassword", keystorePassword);
 	}
-	
+
 	public boolean isSecure() {
 		return Boolean.valueOf(configValues.get("socket.isSecure"));
 	}
@@ -229,12 +250,26 @@ public class Config {
 	public void setIsSecure(boolean isSecure) {
 		configValues.put("socket.isSecure", String.valueOf(isSecure));
 	}
+
+	public boolean isDatasourceEmbedded() {
+		return Boolean.valueOf(configValues.get("datasource.embedded"));
+	}
+
+	public void setDatasourceEmbedded(boolean embedded) {
+		configValues.put("datasource.embedded", String.valueOf(embedded));
+	}
+
+	public int getDatasourceEmbeddedPort() {
+		return Integer.valueOf(configValues.get("datasource.embedded.port"));
+	}
+
+	public void setDatasourceEmbeddedPort(Integer port) {
+		configValues.put("datasource.embedded.port", String.valueOf(port));
+	}
 	
 	@Override
 	public String toString() {
 		return "Config [configValues=" + configValues + "]";
-	}		
-	
+	}
+
 }
-
-
