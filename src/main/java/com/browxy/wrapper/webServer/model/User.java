@@ -4,7 +4,7 @@ public class User {
 
 	private Long id;
 	private String email;
-	private boolean admin;
+	private boolean isAdmin;
 	private String password;
 
 	public Long getId() {
@@ -24,11 +24,11 @@ public class User {
 	}
 
 	public boolean isAdmin() {
-		return admin;
+		return isAdmin;
 	}
 
-	public void setAdmin(boolean admin) {
-		this.admin = admin;
+	public void setIsAdmin(boolean isAdmin) {
+		this.isAdmin = isAdmin;
 	}
 
 	public String getPassword() {

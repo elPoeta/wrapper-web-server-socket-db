@@ -21,7 +21,7 @@ public class UserRepositoryImpl extends GenericRepositoryImpl<User, Long> {
 	        User user = new User();
 	        user.setId(Long.parseLong(row.get("id")));
 	        user.setEmail(row.get("email"));
-	        user.setAdmin(Boolean.getBoolean(row.get("admin")));
+	        user.setIsAdmin(Boolean.getBoolean(row.get("isAdmin")));
 	        user.setPassword(row.get("password"));
 	        return user;
 	    }
@@ -40,7 +40,7 @@ public class UserRepositoryImpl extends GenericRepositoryImpl<User, Long> {
 	        Map<String, String> values = new LinkedHashMap<>();
 	        values.put("id", String.valueOf(user.getId()));
 	        values.put("email", user.getEmail());
-	        values.put("admin", String.valueOf(user.isAdmin()));
+	        values.put("isAdmin", String.valueOf(user.isAdmin()));
 	        values.put("password", user.getPassword());
 	        return values;
 	    }
