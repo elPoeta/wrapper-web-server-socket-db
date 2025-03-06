@@ -29,20 +29,20 @@ public class GetAssetServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String fileName = request.getParameter("file");
-		String alias = request.getParameter("alias");
 		if (fileName == null || fileName.trim().isEmpty()) {
 			response.sendError(404, "This programs is trying to open the file: '" + fileName + "' but is empty.");
 			return;
 		}
-		String path = alias != null && !alias.trim().isEmpty() ? assetPath + File.separator + alias : assetPath;
-		File file = new File(path, fileName);
+		
+		String path = assetPath + File.separator + fileName;
+		File file = new File(path);
 
 		if (!file.exists() || !file.isFile()) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			response.setHeader("Access-Control-Allow-Origin", "*");
 			response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
 			response.sendError(404,
-					"This programs is trying to open the file: 'data/" + fileName + "' but it does not exist");
+					"This programs is trying to open the file: '/" + fileName + "' but it does not exist");
 			return;
 		}
 

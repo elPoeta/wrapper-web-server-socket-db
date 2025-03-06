@@ -95,7 +95,7 @@ public class StartWrapperServer {
 				"/*");
 		servletContextHandler.addServlet(new ServletHolder(new FileUploadServlet(config.getStorage())),
 				"/api/v1/upload");
-		servletContextHandler.addServlet(new ServletHolder(new GetAssetServlet(config.getStorage())),
+		servletContextHandler.addServlet(new ServletHolder(new GetAssetServlet(config.getContainerBasePath())),
 				"/api/v1/getAsset");
 		servletContextHandler.addServlet(new ServletHolder(new DownloadAssetServlet(config.getStorage())),
 				"/api/v1/downloadAsset");
