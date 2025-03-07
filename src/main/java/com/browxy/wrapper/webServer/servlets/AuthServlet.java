@@ -81,8 +81,8 @@ public class AuthServlet extends HttpServlet {
 
 			UserRepositoryImpl userRepository = new UserRepositoryImpl(dbManager);
 			UserServiceImpl userService = new UserServiceImpl(userRepository);
-
-			List<User> users = userService.getByCustom("SELECT * from users where email = ?",
+			String query = !config.isDatasourceEmbedded() ? "SELECT * from bxy_users where email = ?" : "SELECT * from \"bxy_users\" where \"email\" = ?"; 
+			List<User> users = userService.getByCustom(query,
 					Arrays.asList(user.getEmail()), true);
 			User userDb = null;
 			if (!users.isEmpty()) {

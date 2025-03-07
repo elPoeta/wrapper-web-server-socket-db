@@ -191,7 +191,7 @@ public class Config {
 	public String getDataSourceUrl(String connector, String encoding) {
 		return !this.isDatasourceEmbedded()
 				? connector + "://" + getDataSourceIp() + "/" + getDataSourceDbName() + "?characterEncoding=" + encoding
-				: connector + ":file://" + getDataSourceFilePath() + ";shutdown=true;hsqldb.applog=0;sql.enforce_strict_size=false";
+				: connector + ":file:" + getDataSourceFilePath() + ";shutdown=true;sql.names=false;hsqldb.applog=0;sql.enforce_strict_size=false";
 
 	}
 

@@ -41,10 +41,11 @@ public class DBManager {
 
 	private GenericObjectPool<PoolableConnection> pool = null;
 	private PoolingDataSource<PoolableConnection> dataSource = null;
-
+/*
 	public DBManager(String userName, String password, String DBUrl, String dbName) {
 		try {
 			//Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Class.forName("org.hsqldb.jdbc.JDBCDriver").newInstance();
 			this.userName = userName;
 			this.password = password;
 			this.DBUrl = DBUrl;
@@ -58,6 +59,9 @@ public class DBManager {
 			GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
 			config.setTestOnBorrow(true);
 			config.setMaxTotal(10);
+			config.setTestWhileIdle(true);  // Test connections while idle
+			config.setMinEvictableIdleTimeMillis(60000);  // Set the idle time to kill stale connections
+
 			pool = new GenericObjectPool<>(pcf, config);
 			pcf.setPool(pool);
 			dataSource = new PoolingDataSource<>(pool);
@@ -65,6 +69,48 @@ public class DBManager {
 			e1.printStackTrace();
 			logger.error("error initializing dbManager", e1);
 		}
+	}
+*/
+	public DBManager(String userName, String password, String DBUrl, String dbName) {
+	    try {
+	        this.userName = userName;
+	        this.password = password;
+	        this.DBUrl = DBUrl;
+	        this.DBName = dbName;
+
+	        // Detect database type from URL
+	        boolean isHSQLDB = DBUrl.startsWith("jdbc:hsqldb");
+
+	        // Load the correct JDBC driver
+	        if (isHSQLDB) {
+	            Class.forName("org.hsqldb.jdbc.JDBCDriver").newInstance();
+	        } else {
+	            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+	        }
+
+	        ConnectionFactory cf = new DriverManagerConnectionFactory(this.DBUrl, this.userName, this.password);
+
+	        // Use database-specific validation query
+	        String validationQuery = isHSQLDB ? "SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS" : "SELECT 1";
+
+	        PoolableConnectionFactory pcf = new PoolableConnectionFactory(cf, null);
+	        pcf.setValidationQuery(validationQuery);
+
+	        GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
+	        config.setTestOnBorrow(true);
+	        config.setMaxTotal(10);
+	        //config.setTestWhileIdle(true);  // Test connections while idle
+	        //config.setMinEvictableIdleTimeMillis(60000);  // Kill stale connections
+
+	        pool = new GenericObjectPool<>(pcf, config);
+	        pcf.setPool(pool);
+	        dataSource = new PoolingDataSource<>(pool);
+	        
+	        logger.info("DBManager initialized for " + (isHSQLDB ? "HSQLDB" : "MySQL"));
+	    } catch (Exception e) {
+	        logger.error("Error initializing DBManager", e);
+	        throw new RuntimeException("Failed to initialize database connection", e);
+	    }
 	}
 
 	public static DBManager getInstance(String userName, String password, String DBUrl, String dbName) {
@@ -77,7 +123,7 @@ public class DBManager {
 		}
 		return instance;
 	}
-
+/*
 	public Connection getConnection() {
 		Connection conn = null;
 		try {
@@ -94,6 +140,19 @@ public class DBManager {
 		}
 		return conn;
 	}
+*/
+	public Connection getConnection() {
+	    try {
+	        if (pool == null || pool.getNumIdle() == 0) {
+	            logger.warn("Database connection pool is empty! Trying to create a new connection...");
+	        }
+	        
+	        return dataSource.getConnection();
+	    } catch (SQLException e) {
+	        logger.error("Error getting a database connection", e);
+	        throw new RuntimeException("Could not get a database connection", e);
+	    }
+	}
 
 	private void returnConnection(Connection conn) {
 		try {
@@ -108,6 +167,65 @@ public class DBManager {
 
 			logger.error("error returning connection", e1);
 		}
+	}
+
+	public boolean createTable(String tableName, Map<String, String> columns, Map<String, String> foreignKeys)
+			throws SQLException {
+		StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
+		query.append(tableName).append(" (");
+
+		int i = 0;
+		for (Map.Entry<String, String> entry : columns.entrySet()) {
+			query.append(entry.getKey()).append(" ").append(entry.getValue());
+			if (i < columns.size() - 1 || (foreignKeys != null && !foreignKeys.isEmpty())) {
+				query.append(", ");
+			}
+			i++;
+		}
+
+		if (foreignKeys != null && !foreignKeys.isEmpty()) {
+			int fkIndex = 0;
+			for (Map.Entry<String, String> entry : foreignKeys.entrySet()) {
+				query.append("FOREIGN KEY (").append(entry.getKey()).append(") REFERENCES ").append(entry.getValue());
+				if (fkIndex < foreignKeys.size() - 1) {
+					query.append(", ");
+				}
+				fkIndex++;
+			}
+		}
+
+		query.append(");");
+
+		return genericExecute("createTable", query.toString(), null, false);
+	}
+	
+	public boolean createTableForHSQL(String tableName, Map<String, String> columns, Map<String, String> foreignKeys) throws SQLException {
+	    StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
+	    query.append("\"").append(tableName).append("\" (");
+
+	    int i = 0;
+	    for (Map.Entry<String, String> entry : columns.entrySet()) {
+	        query.append("\"").append(entry.getKey()).append("\" ").append(entry.getValue());
+	        if (i < columns.size() - 1 || (foreignKeys != null && !foreignKeys.isEmpty())) {
+	            query.append(", ");
+	        }
+	        i++;
+	    }
+
+	    if (foreignKeys != null && !foreignKeys.isEmpty()) {
+	        int fkIndex = 0;
+	        for (Map.Entry<String, String> entry : foreignKeys.entrySet()) {
+	            query.append(", FOREIGN KEY (\"").append(entry.getKey()).append("\") REFERENCES ").append(entry.getValue());
+	            if (fkIndex < foreignKeys.size() - 1) {
+					query.append(", ");
+				}
+	            fkIndex++;
+	        }
+	    }
+
+	    query.append(");");
+
+	    return genericExecute("createTable", query.toString(), null, false);
 	}
 
 	public String genericSelectSingleValue(String operationName, String query, String[] parameters,

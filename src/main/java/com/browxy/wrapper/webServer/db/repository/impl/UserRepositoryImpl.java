@@ -18,7 +18,7 @@ public class UserRepositoryImpl extends GenericRepositoryImpl<User, Long> {
 	    	if(row == null) {
 	    		return null;
 	    	}
-	        User user = new User();
+	    	User user = new User();
 	        user.setId(Long.parseLong(row.get("id")));
 	        user.setEmail(row.get("email"));
 	        user.setIsAdmin(Boolean.getBoolean(row.get("isAdmin")));
