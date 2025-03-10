@@ -42,6 +42,9 @@ public class Config {
 		configValues.put("socket.isSecure",
 				System.getenv("SOCKET_IS_SECURE") != null ? System.getenv("SOCKET_IS_SECURE") : "false");
 
+		configValues.put("compiler.context",
+				System.getenv("COMPILER_CONTEXT_SERVICE") != null ? System.getenv("COMPILER_CONTEXT_SERVICE") : "http");
+
 		configValues.put("datasource.ip",
 				System.getenv("BROWXY_LIB_DATA_SOURCE_IP") != null ? System.getenv("BROWXY_LIB_DATA_SOURCE_IP") : "");
 		configValues.put("datasource.port",
@@ -60,7 +63,7 @@ public class Config {
 				System.getenv("DATASOURCE_EMBEDDED") != null ? System.getenv("DATASOURCE_EMBEDDED") : "true");
 		configValues.put("datasource.filePath", properties.getProperty("datasource.filePath"));
 		configValues.put("datasource.embedded.port", properties.getProperty("datasource.embedded.port"));
-		
+
 	}
 
 	public static Config getInstance() {
@@ -187,11 +190,12 @@ public class Config {
 	public void setDataSourceFilePath(String filePath) {
 		configValues.put("datasource.filePath", filePath);
 	}
-	
+
 	public String getDataSourceUrl(String connector, String encoding) {
 		return !this.isDatasourceEmbedded()
 				? connector + "://" + getDataSourceIp() + "/" + getDataSourceDbName() + "?characterEncoding=" + encoding
-				: connector + ":file:" + getDataSourceFilePath() + ";shutdown=true;sql.names=false;hsqldb.applog=0;sql.enforce_strict_size=false";
+				: connector + ":file:" + getDataSourceFilePath()
+						+ ";shutdown=true;sql.names=false;hsqldb.applog=0;sql.enforce_strict_size=false";
 
 	}
 
@@ -250,6 +254,14 @@ public class Config {
 	public void setIsSecure(boolean isSecure) {
 		configValues.put("socket.isSecure", String.valueOf(isSecure));
 	}
+	
+	public String getCompilerContextService() {
+		return configValues.get("compiler.context");
+	}
+
+	public void setCompilerContextService(String compilerContext) {
+		configValues.put("compiler.context", compilerContext);
+	}
 
 	public boolean isDatasourceEmbedded() {
 		return Boolean.valueOf(configValues.get("datasource.embedded"));
@@ -266,7 +278,7 @@ public class Config {
 	public void setDatasourceEmbeddedPort(Integer port) {
 		configValues.put("datasource.embedded.port", String.valueOf(port));
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Config [configValues=" + configValues + "]";

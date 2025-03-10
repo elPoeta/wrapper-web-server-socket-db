@@ -22,6 +22,7 @@ import com.browxy.wrapper.webServer.servlets.FileUploadServlet;
 import com.browxy.wrapper.webServer.servlets.GetAssetServlet;
 import com.browxy.wrapper.webServer.servlets.GetSessionServlet;
 import com.browxy.wrapper.webServer.servlets.AuthServlet;
+import com.browxy.wrapper.webServer.servlets.CompilerServiceServlet;
 import com.browxy.wrapper.webServer.servlets.SendStaticFileServlet;
 
 
@@ -44,9 +45,11 @@ public class StartWrapperServer {
 		Thread jettyThread = new Thread(() -> startJettyServer(config, containerBasePath));
 		jettyThread.start();
 
-		int webSocketPort = config.getSocketPort();
-		Thread webSocketThread = new Thread(() -> startWebSocketServer(webSocketPort));
-		webSocketThread.start();
+		if(config.getCompilerContextService().equals("websocket")) {
+			int webSocketPort = config.getSocketPort();
+			Thread webSocketThread = new Thread(() -> startWebSocketServer(webSocketPort));
+			webSocketThread.start();
+		}
 	}
 
 	private static void startJettyServer(Config config, String containerBasePath) {
@@ -93,6 +96,8 @@ public class StartWrapperServer {
 				new ServletHolder(new SendStaticFileServlet(basePath + File.separator + config.getStaticDir(),
 						config.getStaticFile(), config.getEntryPoint())),
 				"/*");
+		servletContextHandler.addServlet(new ServletHolder(new CompilerServiceServlet()),
+				"/api/v1/compilerService");
 		servletContextHandler.addServlet(new ServletHolder(new FileUploadServlet(config.getStorage())),
 				"/api/v1/upload");
 		servletContextHandler.addServlet(new ServletHolder(new GetAssetServlet(config.getContainerBasePath())),

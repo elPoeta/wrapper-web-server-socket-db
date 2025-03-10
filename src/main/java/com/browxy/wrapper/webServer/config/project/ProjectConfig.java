@@ -5,12 +5,22 @@ import java.util.List;
 import com.google.gson.JsonObject;
 
 public class ProjectConfig {
+	private String compilerContextService;
 	private int socketPort;
 	private String entryPoint;
 	private Long projectId;
 	private JsonObject owner;
 	private JsonObject properties;
 	private List<JsonObject> pages;
+
+	
+	public String getCompilerContextService() {
+		return compilerContextService;
+	}
+
+	public void setCompilerContextService(String compilerContextService) {
+		this.compilerContextService = compilerContextService;
+	}
 
 	public int getSocketPort() {
 		return socketPort;

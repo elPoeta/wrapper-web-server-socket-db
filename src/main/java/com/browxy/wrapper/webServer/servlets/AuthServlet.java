@@ -41,7 +41,7 @@ public class AuthServlet extends HttpServlet {
 	    try {
 	        HttpSession session = request.getSession(false);
 	        if (session != null) {
-	            session.removeAttribute("user");  
+	        	session.removeAttribute("user");  
 	        }
 	        response.setStatus(HttpServletResponse.SC_OK);
 	        json.addProperty("statusCode", 200);

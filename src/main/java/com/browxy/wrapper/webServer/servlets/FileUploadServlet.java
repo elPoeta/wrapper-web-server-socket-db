@@ -52,7 +52,7 @@ public class FileUploadServlet extends HttpServlet {
 			List<FileItem> formItems = upload.parseRequest(request);
 			String alias = request.getParameter("alias");
 			String path = alias != null && !alias.trim().isEmpty() ? uploadPath + File.separator + alias : uploadPath;
-			FileManager.createDirectory(path);
+			//FileManager.createDirectory(path);
 			for (FileItem item : formItems) {
 				if (!item.isFormField()) {
 					String fileName = new File(item.getName()).getName();
