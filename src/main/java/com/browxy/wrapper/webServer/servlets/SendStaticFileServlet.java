@@ -83,9 +83,7 @@ public class SendStaticFileServlet extends HttpServlet {
 			String path = containerBasePath + File.separator + "metadata" + File.separator + "project.json";
 			String metadata = FileManager.readFile(path, "UTF-8");
 			projectConfig = gson.fromJson(metadata, ProjectConfig.class);
-			int hostSocketPort = System.getenv("HOST_SOCKET_PORT") != null ? Integer.parseInt(System.getenv("HOST_SOCKET_PORT"))
-					: config.getSocketPort();
-            projectConfig.setSocketPort(hostSocketPort);
+		    projectConfig.setSocketPort(config.getHostSocketPort());
             projectConfig.setEntryPoint(this.entryPoint);
             projectConfig.setCompilerContextService(config.getCompilerContextService());
 		    
