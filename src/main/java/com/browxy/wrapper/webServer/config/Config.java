@@ -6,9 +6,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -35,7 +32,6 @@ public class Config {
 		configValues.put("container.mavenRepoPath", properties.getProperty("container.mavenRepoPath"));
 		configValues.put("container.mavenSettingsPath", properties.getProperty("container.mavenSettingsPath"));
 
-	
 		configValues.put("datasource.filePath", properties.getProperty("datasource.filePath"));
 		configValues.put("datasource.embedded.port", properties.getProperty("datasource.embedded.port"));
 
@@ -71,30 +67,10 @@ public class Config {
 	}
 
 	private static Map<String, String> getEnvFileProperties(Properties properties) {
+		Map<String, String> env = System.getenv();
 		Map<String, String> envVars = new HashMap<>();
-        
-		String filePath = properties.getProperty("container.basePath") + File.separator + ".env";
-		
-				try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-			String line;
-
-			while ((line = br.readLine()) != null) {
-				line = line.trim();
-				if (line.isEmpty() || line.startsWith("#")) {
-					continue;
-				}
-
-				String[] keyValue = line.split("=", 2);
-				if (keyValue.length == 2) {
-					String key = keyValue[0].trim();
-					String value = keyValue[1].trim();
-					envVars.put(key, value);
-				} else if(keyValue.length == 1) {
-					envVars.put(keyValue[0].trim(), "");
-				}
-			}
-		} catch (IOException e) {
-			logger.error("error reading .env file",e);
+		for (Map.Entry<String, String> entry : env.entrySet()) {
+			envVars.put(entry.getKey(), entry.getValue());
 		}
 		return envVars;
 	}
@@ -197,7 +173,7 @@ public class Config {
 
 	public String getDataSourceUrl(String connector, String encoding) {
 		return !this.isDatasourceEmbedded()
-				? connector + "://" + getDataSourceIp() + "/" + getDataSourceDbName() + "?characterEncoding=" + encoding
+				? connector + "://" + getDataSourceIp() + ":" + getDataSourcePort() + "/" + getDataSourceDbName() + "?characterEncoding=" + encoding
 				: connector + ":file:" + getDataSourceFilePath()
 						+ ";shutdown=true;sql.names=false;hsqldb.applog=0;sql.enforce_strict_size=false";
 
@@ -298,7 +274,7 @@ public class Config {
 	public void setProjectId(String projectId) {
 		configValues.put("project.id", projectId);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Config [configValues=" + configValues + "]";

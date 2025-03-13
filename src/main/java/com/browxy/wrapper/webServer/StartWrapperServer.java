@@ -34,7 +34,7 @@ public class StartWrapperServer {
 		if (config == null) {
 			throw new RuntimeException("Server config not loaded...");
 		}
-		
+
 		if(config.isDatasourceEmbedded()) {
 		    HSQLDBManager.startDatabaseServer();
 		}
