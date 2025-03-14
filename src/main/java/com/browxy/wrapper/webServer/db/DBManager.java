@@ -418,7 +418,7 @@ public class DBManager {
 				return String.valueOf(resultSet.getInt(1));
 			}
 		} catch (SQLException e2) {
-			if ((e2.getErrorCode() == duplicateDBErrorCode)) {
+			if(isDuplicateKeyException(e2)) {
 				throw new DuplicatedRecordException();
 			} else {
 				throw e2;
@@ -434,25 +434,56 @@ public class DBManager {
 	}
 
 	public String genericInsert(Connection conn, String operationName, String table, Map<String, String> set)
-			throws SQLException, DuplicatedRecordException {
+			throws SQLException, DuplicatedRecordException {	        
 		String keySet = "";
 		String questionMarkSet = "";
 		int i = 0;
 		String[] columnTypes = new String[set.keySet().size()];
 		String[] columnValues = new String[set.keySet().size()];
 		for (String key : set.keySet()) {
-			keySet += key + ",";
+			String quotedKey = this.quoteIdentifier(key);
+			keySet += quotedKey + ",";
 			questionMarkSet += "?,";
 			columnTypes[i] = "string";
-			columnValues[i] = set.get(key);
+			columnValues[i] = set.get(quotedKey);
 			i++;
 		}
 		keySet = keySet.substring(0, keySet.length() - 1);
 		questionMarkSet = questionMarkSet.substring(0, questionMarkSet.length() - 1);
-		String query = "INSERT INTO " + table + " (" + keySet + ") values (" + questionMarkSet + ")";
+		//String query = "INSERT INTO " + table + " (" + keySet + ") values (" + questionMarkSet + ")";
+        String query = "INSERT INTO " + quoteIdentifier(table) + " (" + keySet + ") VALUES (" + questionMarkSet + ")";
 		return genericStatement(conn, operationName, query, columnTypes, columnValues);
 	}
+	
+	public String genericUpdate(Connection conn, String operationName, String table, Long id, String[][] record)
+	        throws SQLException, DuplicatedRecordException {
+	    StringBuilder keySet = new StringBuilder();
+	    int i = 0;
+	    String[] columnTypes = new String[record.length];
+	    String[] columnValues = new String[record.length];
+	    
+	    for (String[] data : record) {
+	        if (data[0].equals("id")) continue;
+	        keySet.append(quoteIdentifier(data[0])).append(" = ?,");
+	        columnTypes[i] = "string";
+	        columnValues[i] = data[1];
+	        i++;
+	    }
+	    columnTypes[i] = "long";
+	    columnValues[i] = String.valueOf(id);
+	    keySet.setLength(keySet.length() - 1);
+	    
+	    String query = "UPDATE " + quoteIdentifier(table) + " SET " + keySet + " WHERE " + quoteIdentifier("id") + " = ?";
+	    return genericStatement(null, "update", query, columnTypes, columnValues);
+	}
+	
+	public boolean genericDelete(String table, Long id) throws SQLException {
+	    String query = "DELETE FROM " + quoteIdentifier(table) + " WHERE " + quoteIdentifier("id") + " = ?";
+	    String[] parameters = { String.valueOf(id) };
+	    return genericExecute("delete", query, parameters, false);
+	}
 
+/*
 	public String genericUpdate(Connection conn, String operationName, String table, Long id, String[][] record)
 			throws SQLException, DuplicatedRecordException {
 		String keySet = "";
@@ -482,7 +513,8 @@ public class DBManager {
 		String[] parameters = { String.valueOf(id) };
 		return genericExecute("delete", query, parameters, false);
 	}
-
+   */
+	
 	public List<Map<String, String>> selectWithFiltersAndJoins(String operationName, String baseTable,
 			List<String> columns, Map<String, String> joins, Map<String, Map<String, String>> filters,
 			Map<String, String> orderBy, boolean convertNumericToString, int limit, int offset) throws SQLException {
@@ -615,6 +647,41 @@ public class DBManager {
 		}
 	}
 
+    private String quoteIdentifier(String identifier) {
+        return this.isHsql() ? "\"" + identifier + "\"" : "`" + identifier + "`"; 
+      }
+     
+      private boolean  isHsql() {
+  	  return this.DBUrl.startsWith("jdbc:hsqldb");	
+  	}
+  	
+      private boolean isDuplicateKeyException(SQLException e) {
+          String sqlState = e.getSQLState();
+          int errorCode = e.getErrorCode();
+          
+          if (!this.isHsql() && errorCode == duplicateDBErrorCode) {
+              return true;
+          }
+
+          // HSQLDB duplicate key error (violates unique constraint)
+          if (this.isHsql() && "23505".equals(sqlState)) {
+              return true;
+          }    
+       
+        /*
+          // MySQL duplicate key error
+          if ("23000".equals(sqlState) && errorCode == 1062) {
+              return true;
+          }
+
+          // HSQLDB duplicate key error (violates unique constraint)
+          if ("23505".equals(sqlState)) {
+              return true;
+          }
+        */
+          return false;
+      } 
+	
 	private void closeResources(ResultSet rset, PreparedStatement pstm, CallableStatement stmt, Connection conn) {
 		closeResources(rset, pstm, stmt, null, conn);
 	}
