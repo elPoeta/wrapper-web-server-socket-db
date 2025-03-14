@@ -86,7 +86,8 @@ public class SendStaticFileServlet extends HttpServlet {
 		    projectConfig.setSocketPort(config.getHostSocketPort());
             projectConfig.setEntryPoint(this.entryPoint);
             projectConfig.setCompilerContextService(config.getCompilerContextService());
-		    
+		    projectConfig.setEmbedded(config.isDatasourceEmbedded());
+
 		} catch (Exception e) {
 			logger.error("unable to build project metatdata content", e);
 		}

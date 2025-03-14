@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 
 public class ProjectConfig {
 	private String compilerContextService;
+	private boolean isEmbedded;
 	private int socketPort;
 	private String entryPoint;
 	private Long projectId;
@@ -69,5 +70,15 @@ public class ProjectConfig {
 	public void setPages(List<JsonObject> pages) {
 		this.pages = pages;
 	}
+
+	public boolean isEmbedded() {
+		return isEmbedded;
+	}
+
+	public void setEmbedded(boolean isEmbedded) {
+		this.isEmbedded = isEmbedded;
+	}
+	
+	
 
 }
