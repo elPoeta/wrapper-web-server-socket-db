@@ -15,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 
 import com.browxy.wrapper.webServer.config.Config;
-import com.browxy.wrapper.webServer.db.embedded.HSQLDBManager;
+import com.browxy.wrapper.webServer.db.HSQLInitDB;
+import com.browxy.wrapper.webServer.db.MySQLInitDB;
+import com.browxy.wrapper.webServer.db.SQLDBManager;
 import com.browxy.wrapper.webServer.servlets.DownloadAssetServlet;
 import com.browxy.wrapper.webServer.servlets.FileReaderServlet;
 import com.browxy.wrapper.webServer.servlets.FileUploadServlet;
@@ -36,7 +38,9 @@ public class StartWrapperServer {
 		}
 
 		if(config.isDatasourceEmbedded()) {
-		    HSQLDBManager.startDatabaseServer();
+		    SQLDBManager.startHSQLDatabaseServer(new HSQLInitDB());
+		} else {
+			SQLDBManager.initMYSQLDatabase(new MySQLInitDB());
 		}
 		
 		String containerBasePath = config.getContainerBasePath();
@@ -49,6 +53,7 @@ public class StartWrapperServer {
 			int webSocketPort = config.getSocketPort();
 			Thread webSocketThread = new Thread(() -> startWebSocketServer(webSocketPort));
 			webSocketThread.start();
+			logger.info("Jetty server started at http://localhost:" + config.getSocketPort());
 		}
 	}
 
@@ -71,7 +76,7 @@ public class StartWrapperServer {
 			jettyServer.setHandler(handlers);
 
 			jettyServer.start();
-			logger.info("Jetty server started at http://localhost:" + config.getSocketPort());
+		
 			jettyServer.join();
 		} catch (Exception e) {
 			logger.error("Error starting Jetty server", e);

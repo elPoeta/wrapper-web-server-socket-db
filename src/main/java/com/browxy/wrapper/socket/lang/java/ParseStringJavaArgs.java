@@ -56,8 +56,6 @@ public class ParseStringJavaArgs {
 			if (element.isJsonPrimitive()) {
 				JsonPrimitive primitive = element.getAsJsonPrimitive();
 				if (primitive.isNumber()) {
-					// arguments.add(primitive.getAsNumber());
-					// argumentTypes.add(Number.class);
 					Number number;
 					Class<?> numberType;
 					try {

@@ -168,7 +168,7 @@ public class DBManager {
 			logger.error("error returning connection", e1);
 		}
 	}
-
+	
 	public boolean createTable(String tableName, Map<String, String> columns, Map<String, String> foreignKeys)
 			throws SQLException {
 		StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS ");

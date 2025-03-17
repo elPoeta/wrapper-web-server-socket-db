@@ -108,11 +108,11 @@ public class Config {
 	}
 
 	public String getEntryPoint() {
-		return configValues.get("server.entryPoint");
+		return configValues.get("BXY_SERVER_ENTRY_POINT");
 	}
 
 	public void setEntryPoint(String entryPoint) {
-		configValues.put("server.entryPoint", entryPoint);
+		configValues.put("BXY_SERVER_ENTRY_POINT", entryPoint);
 	}
 
 	public String getStorage() {
@@ -124,43 +124,43 @@ public class Config {
 	}
 
 	public String getDataSourceIp() {
-		return configValues.get("datasource.ip");
+		return configValues.get("BXY_DATA_SOURCE_IP");
 	}
 
 	public void setDataSourceIp(String ip) {
-		configValues.put("datasource.ip", ip);
+		configValues.put("BXY_DATA_SOURCE_IP", ip);
 	}
 
 	public int getDataSourcePort() {
-		return Integer.parseInt(configValues.get("datasource.port"));
+		return Integer.parseInt(configValues.get("BXY_DATA_SOURCE_PORT"));
 	}
 
 	public void setDataSourcePort(int port) {
-		configValues.put("datasource.port", String.valueOf(port));
+		configValues.put("BXY_DATA_SOURCE_PORT", String.valueOf(port));
 	}
 
 	public String getDataSourceDbName() {
-		return configValues.get("datasource.dbname");
+		return configValues.get("BXY_DATA_SOURCE_DB_NAME");
 	}
 
 	public void setDataSourceDbName(String dbname) {
-		configValues.put("datasource.dbname", dbname);
+		configValues.put("BXY_DATA_SOURCE_DB_NAME", dbname);
 	}
 
 	public String getDataSourceUserName() {
-		return configValues.get("datasource.username");
+		return configValues.get("BXY_DATA_SOURCE_USER");
 	}
 
 	public void setDataSourceUserName(String username) {
-		configValues.put("datasource.username", username);
+		configValues.put("BXY_DATA_SOURCE_USER", username);
 	}
 
 	public String getDataSourcePassword() {
-		return configValues.get("datasource.password");
+		return configValues.get("BXY_DATA_SOURCE_PASSWORD");
 	}
 
 	public void setDataSourcePassword(String password) {
-		configValues.put("datasource.password", password);
+		configValues.put("BXY_DATA_SOURCE_PASSWORD", password);
 	}
 
 	public String getDataSourceFilePath() {
@@ -212,51 +212,63 @@ public class Config {
 	}
 
 	public int getHostSocketPort() {
-		return Integer.valueOf(configValues.get("host.socket.port"));
+		String portString = configValues.get("BXY_HOST_SOCKET_PORT");
+		int defaultPort = 9191;
+		
+		if (portString == null || portString.isEmpty()) {
+		   return defaultPort;
+		}
+
+		try {
+			return Integer.valueOf(portString);
+		} catch (NumberFormatException e) {
+           return defaultPort;
+		}		
+		
 	}
 
 	public void setHostSocketPort(int port) {
-		configValues.put("host.socket.port", String.valueOf(port));
+		configValues.put("BXY_HOST_SOCKET_PORT", String.valueOf(port));
 	}
 
 	public String getKeystorePath() {
-		return configValues.get("socket.keystorePath");
+		return configValues.get("BXY_SOCKET_KEYSTORE_PATH");
 	}
 
 	public void setKeystorePath(String keystorePath) {
-		configValues.put("socket.keystorePath", keystorePath);
+		configValues.put("BXY_SOCKET_KEYSTORE_PATH", keystorePath);
 	}
 
 	public String getKeystorePassword() {
-		return configValues.get("socket.keystorePassword");
+		return configValues.get("BXY_SOCKET_KEYSTORE_PASSWORD");
 	}
 
 	public void setKeystorePassword(String keystorePassword) {
-		configValues.put("socket.keystorePassword", keystorePassword);
+		configValues.put("BXY_SOCKET_KEYSTORE_PASSWORD", keystorePassword);
 	}
 
 	public boolean isSecure() {
-		return Boolean.valueOf(configValues.get("socket.isSecure"));
+		return Boolean.valueOf(configValues.get("BXY_SOCKET_IS_SECURE"));
 	}
 
 	public void setIsSecure(boolean isSecure) {
-		configValues.put("socket.isSecure", String.valueOf(isSecure));
+		configValues.put("BXY_SOCKET_IS_SECURE", String.valueOf(isSecure));
 	}
 
 	public String getCompilerContextService() {
-		return configValues.get("compiler.context");
+		return configValues.get("BXY_COMPILER_CONTEXT");
 	}
 
 	public void setCompilerContextService(String compilerContext) {
-		configValues.put("compiler.context", compilerContext);
+		configValues.put("BXY_COMPILER_CONTEXT", compilerContext);
 	}
 
 	public boolean isDatasourceEmbedded() {
-		return Boolean.valueOf(configValues.get("datasource.embedded"));
+		return Boolean.valueOf(configValues.get("BXY_DATA_SOURCE_EMBEDDED"));
 	}
 
 	public void setDatasourceEmbedded(boolean embedded) {
-		configValues.put("datasource.embedded", String.valueOf(embedded));
+		configValues.put("BXY_DATA_SOURCE_EMBEDDED", String.valueOf(embedded));
 	}
 
 	public int getDatasourceEmbeddedPort() {
@@ -268,11 +280,11 @@ public class Config {
 	}
 
 	public String getProjectId() {
-		return configValues.get("project.id");
+		return configValues.get("BXY_PROJECT_ID");
 	}
 
 	public void setProjectId(String projectId) {
-		configValues.put("project.id", projectId);
+		configValues.put("BXY_PROJECT_ID", projectId);
 	}
 
 	@Override
